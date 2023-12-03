@@ -1,86 +1,98 @@
 #include <iostream>
 #include <vector>
+#include <iomanip>
 
 using namespace std;
 
-
-int mm_divison(int num, int divisor) {
+int neg_division(int num, int divisor)  {
     if ((num < 0) && (num % divisor))
         return num / divisor - 1;
     else
         return num / divisor;
 }
 
-int _mod(int num, int divisor) {
+int neg_mod(int num, int divisor)  {
     if ((num < 0) && (num % divisor))
-        return num % divisor + divisor;
+            return num % divisor + divisor;
     else
         return num % divisor;
 }
-
-
-class LongNum {
+class Long_Num {
 private:
-    vector<int> blocks;  
+    vector<int> blocks;
     int sign;
     static const int BASE = 2;
     static const int BASE_10 = 100;
+    Long_Num _plus(Long_Num &a);
+    Long_Num _minus(Long_Num &a);
     void normalize_sign();
-    void normalize_blocks(); 
-
+    void normalize_blocks();
+    void _resize(int newsize);
 public:
-
-    friend ostream &operator<<(ostream &output, LongNum &num);
+    Long_Num operator + (Long_Num &num);
+    Long_Num operator - (Long_Num &num);
+    friend ostream & operator << (ostream &output, Long_Num &num);
     
-    LongNum(string num_start) {
+    int getBASE() {
+        return this->BASE;
+    }
+
+    Long_Num(string num_start) {
         int i;
         if (BASE != 1) {
             for (i = num_start.size() - BASE; i >= BASE - 1; i -= BASE) {
                 blocks.push_back(stoi(num_start.substr(i, BASE)));
             }
-        } else {
+        }
+        else {
             for (i = num_start.size() - BASE; i >= BASE; i -= BASE) {
                 blocks.push_back(stoi(num_start.substr(i, BASE)));
             }
         }
+
         if (num_start[0] == '-') {
             sign = -1;
             if (i + BASE - 1 != 0) {
                 blocks.push_back(stoi(num_start.substr(1, i + BASE - 1)));
             }
-        } else {
+        }
+        else {
             sign = 1;
-            blocks.push_back(stoi(num_start.substr(0, i + BASE)));
+            blocks.push_back(stoi(num_start.substr(0, i+BASE)));
         }
     }
-    LongNum() {
+
+    Long_Num() {
         sign = 1;
     }
-    
 };
 
-void LongNum::normalize_blocks() {
-    int garbage = 0;
+void Long_Num::_resize(int newSize) {
+    blocks.resize(newSize);
+}
+
+void Long_Num::normalize_blocks() {
+    int over = 0;
     for (int i = 0; i < blocks.size() - 1; i++) {
-        blocks[i] += garbage; 
-        garbage = mm_divison(blocks[i], BASE_10); 
-        blocks[i] = _mod(blocks[i], BASE_10);
+        blocks[i] += over; 
+        over = neg_division(blocks[i], BASE_10); 
+        blocks[i] = neg_mod(blocks[i], BASE_10); 
     }
-    blocks[blocks.size() - 1] += garbage;
+    blocks[blocks.size() - 1] += over;
     if (blocks[blocks.size() - 1] / BASE_10) {
-        garbage = mm_divison(blocks[blocks.size() - 1], BASE_10);
-        blocks[blocks.size() - 1] = _mod(blocks[blocks.size() - 1], BASE_10);
-        blocks.push_back(garbage); 
+        over = neg_division(blocks[blocks.size() - 1], BASE_10);
+        blocks[blocks.size() - 1] = neg_mod(blocks[blocks.size() - 1], BASE_10);
+        blocks.push_back(over); 
     }
     return;
 }
 
-void LongNum::normalize_sign() {
+void Long_Num::normalize_sign() {
     if (blocks[blocks.size() - 1] < 0) {
-        sign = -sign;
-        blocks[0] = BASE_10 - blocks[0];
+        sign = -sign; 
+        blocks[0] = BASE_10 - blocks[0]; 
         for (int i = 1; i < blocks.size(); i++) {
-            blocks[i] = (BASE_10 - blocks[i] - 1) % BASE_10;
+            blocks[i] = (BASE_10 - blocks[i] - 1) % BASE_10; 
         }
     }
     int i = blocks.size() - 1;
@@ -95,26 +107,80 @@ void LongNum::normalize_sign() {
     return;
 }
 
-ostream &operator<<(ostream &output, LongNum &num) {
+Long_Num Long_Num::_plus(Long_Num &num) {
+    Long_Num res;
+    res.sign = this->sign;
+    for (int i = 0; i < this->blocks.size(); i++) {
+        res.blocks.push_back(this->blocks[i] + num.blocks[i]);
+    }
+    return res;
+}
+
+Long_Num Long_Num::_minus(Long_Num &num) {
+    Long_Num res;
+    res.sign = this->sign;
+    for (int i = 0; i < this->blocks.size(); i++) {
+        res.blocks.push_back(this->blocks[i] - num.blocks[i]);
+    }
+    return res;
+}
+
+Long_Num Long_Num::operator + (Long_Num &num) {
+    
+    Long_Num res;
+    if (this->blocks.size() > num.blocks.size()) {
+        num._resize(blocks.size());
+    }
+    else {
+        (*this)._resize(num.blocks.size());
+    }
+
+    if (sign == num.sign) {
+        res = (*this)._plus(num);
+    }
+    else {
+        res = (*this)._minus(num);
+    }
+
+    res.normalize_blocks();
+    return res;
+}
+
+Long_Num Long_Num::operator - (Long_Num &num) {
+    Long_Num res;
+    if (this->blocks.size() > num.blocks.size()) {
+        num._resize(blocks.size());
+    }
+    else {
+        (*this)._resize(num.blocks.size());
+    }
+    
+    if (sign != num.sign) {
+        res = (*this)._plus(num);
+    }
+    else {
+        res = (*this)._minus(num);
+    }
+
+    res.normalize_blocks();
+    return res;
+}
+ostream & operator << (ostream &output, Long_Num &num) {
     num.normalize_sign();
     if (num.sign == -1) {
         output << '-';
     }
     output << num.blocks[num.blocks.size() - 1];
     for (int i = num.blocks.size() - 2; i >= 0; i--) {
-        output << num.blocks[i];
+        output << setw(num.getBASE()) << setfill('0') << num.blocks[i];
     }
     return output;
 }
-
-
-
 int main() {
-    LongNum n1("1389081290485792752893749714910740148917918570949129047105705705958094809841");
-    LongNum n2("814010480015679146186491471984701749169461964174491");
+    Long_Num num1("847598275097805378310597908095017557105791751857180571057105781305413904781097415670137590174501741780471056701561890571890");
+    Long_Num num2("10");
+    Long_Num num3 = num1 - num2;
 
-    cout << n1 << endl;
-    cout << n2 << endl;
-    
+    cout << num3 << endl;
     return 0;
 }
