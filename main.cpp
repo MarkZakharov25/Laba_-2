@@ -31,6 +31,19 @@ private:
 public:
     Long_Num operator + (Long_Num &num);
     Long_Num operator - (Long_Num &num);
+
+    Long_Num operator * (Long_Num &num);
+    Long_Num operator / (Long_Num &num);
+
+    bool operator == (const Long_Num &num) const;
+    bool operator != (const Long_Num &num) const;
+    bool operator < (const Long_Num &num) const;
+    bool operator <= (const Long_Num &num) const;
+    bool operator > (const Long_Num &num) const;
+    bool operator >= (const Long_Num &num) const;
+
+    
+
     friend ostream & operator << (ostream &output, Long_Num &num);
     
     int getBASE() {
@@ -165,6 +178,122 @@ Long_Num Long_Num::operator - (Long_Num &num) {
     res.normalize_blocks();
     return res;
 }
+
+bool Long_Num::operator == (const Long_Num &num) const {
+    return (sign == num.sign) && (blocks == num.blocks);
+}
+
+bool Long_Num::operator != (const Long_Num &num) const {
+    return !(*this == num);
+}
+
+bool Long_Num::operator < (const Long_Num &num) const {
+    if (sign < num.sign) {
+        return true;
+    } else if (sign > num.sign) {
+        return false;
+    }
+
+    if (sign == 1) {
+        if (blocks.size() < num.blocks.size()) {
+            return true;
+        } else if (blocks.size() > num.blocks.size()) {
+            return false;
+        }
+
+        for (int i = blocks.size() - 1; i >= 0; i--) {
+            if (blocks[i] < num.blocks[i]) {
+                return true;
+            } else if (blocks[i] > num.blocks[i]) {
+                return false;
+            }
+        }
+    } else {
+        if (blocks.size() > num.blocks.size()) {
+            return true;
+        } else if (blocks.size() < num.blocks.size()) {
+            return false;
+        }
+
+        for (int i = blocks.size() - 1; i >= 0; i--) {
+            if (blocks[i] > num.blocks[i]) {
+                return true;
+            } else if (blocks[i] < num.blocks[i]) {
+                return false;
+            }
+        }
+    }
+    return false;
+}
+
+bool Long_Num::operator <= (const Long_Num &num) const {
+    return (*this < num) || (*this == num);
+}
+
+bool Long_Num::operator > (const Long_Num &num) const {
+    return !(*this <= num);
+}
+
+bool Long_Num::operator >= (const Long_Num &num) const {
+    return !(*this < num);
+}
+
+Long_Num Long_Num::operator * (Long_Num &num) {
+    Long_Num result;
+    
+    // Set the sign of the result
+    result.sign = this->sign * num.sign;
+
+    // Resize the result to accommodate the multiplication
+    result._resize(this->blocks.size() + num.blocks.size());
+
+    // Perform multiplication algorithm
+    for (int i = 0; i < this->blocks.size(); i++) {
+        for (int j = 0; j < num.blocks.size(); j++) {
+            result.blocks[i + j] += this->blocks[i] * num.blocks[j];
+        }
+    }
+
+    // Normalize the result
+    result.normalize_blocks();
+    result.normalize_sign();
+
+    return result;
+}
+
+Long_Num Long_Num::operator / (Long_Num &num) {
+
+    if (num == Long_Num("0")) {
+        cerr << "Error: Division by zero." << endl;
+        exit(1);
+    }
+
+    Long_Num quotient, remainder, temp;
+
+    quotient.sign = this->sign * num.sign;
+    remainder.sign = this->sign;
+
+    temp = *this;
+    temp.sign = 1;
+
+    for (int i = temp.blocks.size() - 1; i >= 0; i--) {
+        remainder.blocks.insert(remainder.blocks.begin(), temp.blocks[i]);
+
+        int guess = 0;
+        while (!(remainder < num)) {
+            remainder = remainder - num;
+            guess++;
+        }
+
+        quotient.blocks.insert(quotient.blocks.begin(), guess);
+    }
+
+    quotient.normalize_sign();
+    remainder.normalize_sign();
+
+    return quotient;
+}
+
 ostream & operator << (ostream &output, Long_Num &num) {
     num.normalize_sign();
     if (num.sign == -1) {
@@ -176,11 +305,26 @@ ostream & operator << (ostream &output, Long_Num &num) {
     }
     return output;
 }
+
 int main() {
     Long_Num num1("847598275097805378310597908095017557105791751857180571057105781305413904781097415670137590174501741780471056701561890571890");
     Long_Num num2("10");
     Long_Num num3 = num1 - num2;
 
-    cout << num3 << endl;
+    cout << num3 << endl << endl;
+
+    Long_Num n1("123456789");
+    Long_Num n2("9876");
+    Long_Num quotient = n1 / n2;
+    cout << "Quotient: " << quotient << endl;
+
+    cout << "Comparison results:" << endl;
+    cout << "num1 == num2: " << (num1 == num2) << endl;
+    cout << "num1 != num2: " << (num1 != num2) << endl;
+    cout << "num1 < num2: " << (num1 < num2) << endl;
+    cout << "num1 <= num2: " << (num1 <= num2) << endl;
+    cout << "num1 > num2: " << (num1 > num2) << endl;
+    cout << "num1 >= num2: " << (num1 >= num2) << endl;
+
     return 0;
 }
