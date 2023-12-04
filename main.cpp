@@ -243,10 +243,8 @@ bool Long_Num::operator >= (const Long_Num &num) const {
 Long_Num Long_Num::operator * (Long_Num &num) {
     Long_Num result;
     
-    // Set the sign of the result
     result.sign = this->sign * num.sign;
 
-    // Resize the result to accommodate the multiplication
     result._resize(this->blocks.size() + num.blocks.size());
 
     // Perform multiplication algorithm
@@ -256,7 +254,6 @@ Long_Num Long_Num::operator * (Long_Num &num) {
         }
     }
 
-    // Normalize the result
     result.normalize_blocks();
     result.normalize_sign();
 
@@ -318,6 +315,9 @@ int main() {
     Long_Num n1("123456789");
     Long_Num n2("9876");
     Long_Num quotient = n1 / n2;
+    Long_Num mult_res = n1 * n2;
+    
+    cout << "Multiplication result: " << mult_res << endl;
     cout << "Quotient: " << quotient << endl;
 
     cout << "Comparison results:" << endl;
