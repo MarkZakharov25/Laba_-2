@@ -42,6 +42,8 @@ public:
     bool operator > (const Long_Num &num) const;
     bool operator >= (const Long_Num &num) const;
 
+    Long_Num karatsuba(const Long_Num &num1, const Long_Num &num2);
+
     
 
     friend ostream & operator << (ostream &output, Long_Num &num);
