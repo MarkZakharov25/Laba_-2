@@ -15,9 +15,25 @@ int neg_mod(int num, int divisor) {
         return num % divisor;
 }
 
+const std::vector<int>& Long_Num::getBlocks() const {
+    return blocks;
+}
+
+std::vector<int>& Long_Num::getBlocks() {
+    return blocks;
+}
+
+
 Long_Num::Long_Num() {
         sign = 1;
     }
+
+void Long_Num::trimLeadingZeros() {
+    
+    while (blocks.size() > 1 && blocks.back() == 0) {
+        blocks.pop_back();
+    }
+}
 
 Long_Num::Long_Num(string num_start) {
         int i;
