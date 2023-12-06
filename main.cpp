@@ -1,6 +1,6 @@
 #include <iostream>
 #include "Long_num.h"
-#include "Long_num.cpp"
+#include "Karatsuba.cpp"
 
 int main() {
     Long_Num num1("847598275097805378310597908095017557105791751857180571057105781305413904781097415670137590174501741780471056701561890571890");
@@ -24,6 +24,12 @@ int main() {
     cout << "num1 <= num2: " << (num1 <= num2) << endl;
     cout << "num1 > num2: " << (num1 > num2) << endl;
     cout << "num1 >= num2: " << (num1 >= num2) << endl;
+
+    Karatsuba karatsuba;
+    Long_Num nn1("121212");
+    Long_Num nn2("981212");
+
+    Long_Num result = karatsuba.multiply(nn1, nn2);
 
     return 0;
 }

@@ -1,4 +1,4 @@
-#include <iostream>
+#include <string>
 #include "Long_num.h"
 
 int neg_division(int num, int divisor) {
@@ -29,10 +29,16 @@ Long_Num::Long_Num() {
     }
 
 void Long_Num::trimLeadingZeros() {
-    
+
     while (blocks.size() > 1 && blocks.back() == 0) {
         blocks.pop_back();
     }
+}
+
+Long_Num Long_Num::resizeTo(int newSize) const {
+    Long_Num resizedNum(*this);
+    resizedNum.blocks.resize(newSize);
+    return resizedNum;
 }
 
 Long_Num::Long_Num(string num_start) {
@@ -159,6 +165,24 @@ Long_Num Long_Num::operator - (Long_Num& num) {
     return res;
 }
 
+Long_Num Long_Num::operator - (const Long_Num& num) const {
+    Long_Num res;
+    
+    int newSize = std::max(blocks.size(), num.blocks.size());
+    Long_Num resizedThis = this->resizeTo(newSize);
+    Long_Num resizedNum = num.resizeTo(newSize);
+
+    if (sign != num.sign) {
+        res = resizedThis._plus(resizedNum);
+    }
+    else {
+        res = resizedThis._minus(resizedNum);
+    }
+
+    res.normalize_blocks();
+    return res;
+}
+
 bool Long_Num::operator == (const Long_Num& num) const {
     return (sign == num.sign) && (blocks == num.blocks);
 }
@@ -238,6 +262,27 @@ Long_Num Long_Num::operator * (Long_Num& num) {
     return result;
 }
 
+Long_Num Long_Num::operator * (const Long_Num& num) const {
+    Long_Num result;
+
+    result.sign = this->sign * num.sign;
+
+    int newSize = this->blocks.size() + num.blocks.size();
+    result.resizeTo(newSize);
+
+    // Виконуємо алгоритм множення
+    for (int i = 0; i < this->blocks.size(); i++) {
+        for (int j = 0; j < num.blocks.size(); j++) {
+            result.blocks[i + j] += this->blocks[i] * num.blocks[j];
+        }
+    }
+
+    result.normalize_blocks();
+    result.normalize_sign();
+
+    return result;
+}
+
 Long_Num Long_Num::operator / (Long_Num& num) {
 
     if (num == Long_Num("0")) {
@@ -282,3 +327,6 @@ std::ostream& operator << (std::ostream& output, Long_Num& num) {
     }
     return output;
 }
+
+
+

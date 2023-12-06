@@ -1,1 +1,1 @@
-  int n = std::max(num1.blocks.size(), num2.blocks.size());
+ // cout << "it's B after adding 0's: "<< B << endl; 
